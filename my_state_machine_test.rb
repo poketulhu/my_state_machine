@@ -26,4 +26,8 @@ class MyStateMachineTest < Test::Unit::TestCase
     @article.created
     assert @article.may_check?
   end
+
+  test 'after callback' do
+    assert_equal "Article is published", @article.create
+  end
 end

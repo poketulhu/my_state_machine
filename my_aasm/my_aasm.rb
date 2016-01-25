@@ -47,6 +47,7 @@ module MyAASM
       define_method "#{event_name}" do
         result = may_fire?(event_name)
         !result.empty? ? @inst_state = result.first[:to] : raise(TransitionError, 'Cannot change state')
+        after_callback(options[:after]) if options[:after]
       end
 
       class_eval <<-EORUBY, __FILE__, __LINE__ + 1
@@ -58,6 +59,10 @@ module MyAASM
             t[:from].is_a?(Symbol) ? t[:from] == @inst_state : t[:from].include?(@inst_state)
           end
         end
+
+        def after_callback(method_name)
+          send(method_name)
+        end
       EORUBY
 
       instance_eval(&block) if block
@@ -65,6 +70,7 @@ module MyAASM
 
     def transitions(options)
       @state_machine.events[@cur_event] << { from: options[:from], to: options[:to] }
+      # p @to = send(options[:if]) if options[:if]
     end
   end
 end
