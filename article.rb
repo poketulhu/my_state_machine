@@ -1,5 +1,4 @@
 require_relative 'my_aasm/my_aasm'
-require_relative 'my_aasm/event'
 
 class Article
   include MyAASM

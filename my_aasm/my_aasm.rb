@@ -1,7 +1,8 @@
 require_relative 'state_machine'
-require_relative 'event'
 
 module MyAASM
+
+  class TransitionError < RuntimeError; end
 
   def self.included(base)
     base.extend ClassMethods
@@ -40,12 +41,24 @@ module MyAASM
       @cur_event = event_name
 
       define_method "may_#{event_name}?" do
-        state_machine = self.class.class_eval { @state_machine }
-        result = state_machine.events[event_name].select do |t|
-          t[:from].is_a?(Symbol) ? t[:from] == @inst_state : t[:from].include?(@inst_state)
-        end
-        !result.empty?
+        !may_fire?(event_name).empty?
       end
+
+      define_method "#{event_name}" do
+        result = may_fire?(event_name)
+        !result.empty? ? @inst_state = result.first[:to] : raise(TransitionError, 'Cannot change state')
+      end
+
+      class_eval <<-EORUBY, __FILE__, __LINE__ + 1
+        private
+
+        def may_fire?(event_name)
+          state_machine = self.class.class_eval { @state_machine }
+          result = state_machine.events[event_name].select do |t|
+            t[:from].is_a?(Symbol) ? t[:from] == @inst_state : t[:from].include?(@inst_state)
+          end
+        end
+      EORUBY
 
       instance_eval(&block) if block
     end

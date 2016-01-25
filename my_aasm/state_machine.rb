@@ -1,5 +1,3 @@
-require_relative 'event'
-
 module MyAASM
   class StateMachine
     attr_accessor :states, :events
