@@ -10,17 +10,18 @@ class Article
     @description = description
   end
 
+  def self.article_correct
+    rand(10) > 5 ? true : false
+  end
+
   my_aasm do
     state :init
     state :created
     state :checked
     state :accepted
     state :not_accepted
-    state :edited
-    state :published
-    state :deleted
 
-    event :create, after: :send_publication_information do
+    event :create, after: :send_creation_information do
       transitions from: :init, to: :created
     end
 
@@ -28,25 +29,9 @@ class Article
       transitions from: [:created, :edited], to: :accepted, if: :article_correct
       transitions from: [:created, :edited], to: :not_accepted
     end
-
-    event :publish do
-      transitions from: :accepted, to: :published
-    end
-
-    event :edit do
-      transitions from: :not_accepted, to: :edited
-    end
-
-    event :delete, after: :send_delete_confirmation do
-      transitions from: [:created, :published], to: :deleted
-    end
   end
 
-  def send_publication_information
-    p "Article is published"
-  end
-
-  def send_delete_confirmaton
-    p "Article is deleted"
+  def send_creation_information
+    p "Article is created"
   end
 end
