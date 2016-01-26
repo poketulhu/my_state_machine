@@ -14,7 +14,7 @@ module MyAASM
     def my_aasm(&block)
       alias_method :original_initialize, :initialize
       define_method :initialize do |*args|
-        original_initialize(*args[0..-2])
+        original_initialize(*args)
         instance_variable_set('@state', :init)
         self.class.send(:define_method, 'state') { instance_variable_get '@state' }
       end
@@ -58,18 +58,15 @@ module MyAASM
 
       class_eval <<-EORUBY, __FILE__, __LINE__ + 1
         private
-
         def may_fire?(event_name)
           state_machine = self.class.class_eval { @state_machine }
           result = state_machine.events[event_name].select do |t|
             t[:from].is_a?(Symbol) ? t[:from] == @state : t[:from].include?(@state)
           end
         end
-
         def after_callback(method_name)
           send(method_name)
         end
-
       EORUBY
 
       instance_eval(&block) if block

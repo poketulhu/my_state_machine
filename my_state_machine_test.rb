@@ -31,9 +31,16 @@ class MyStateMachineTest < Test::Unit::TestCase
     assert_equal "Article is created", @article.create
   end
 
-  test 'conditional in transition' do
+  test 'condition in transition' do
     @article.create
     @article.check
     assert_include [:accepted, :not_accepted], @article.state
+    if @article.state == :accepted
+      @article.publish
+      assert_equal :published, @article.state
+    else
+      @article.edit
+      assert_equal :edited, @article.state
+    end
   end
 end

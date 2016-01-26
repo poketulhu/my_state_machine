@@ -17,9 +17,11 @@ class Article
   my_aasm do
     state :init
     state :created
-    state :checked
     state :accepted
     state :not_accepted
+    state :edited
+    state :published
+    state :deleted
 
     event :create, after: :send_creation_information do
       transitions from: :init, to: :created
@@ -28,6 +30,18 @@ class Article
     event :check do
       transitions from: [:created, :edited], to: :accepted, if: :article_correct
       transitions from: [:created, :edited], to: :not_accepted
+    end
+
+    event :publish do
+      transitions from: :accepted, to: :published
+    end
+
+    event :edit do
+      transitions from: :not_accepted, to: :edited
+    end
+
+    event :delete do
+      transitions from: [:created, :published], to: :deleted
     end
   end
 
